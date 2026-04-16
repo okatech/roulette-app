@@ -1,135 +1,191 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎰 Roulette</title>
+<title>🌸 Spin the Wheel</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #0d1117;
-    color: #fff;
+    font-family: 'Lato', sans-serif;
+    background: linear-gradient(160deg, #fce4f0 0%, #fff0f8 25%, #fef6e4 50%, #e8f6fd 75%, #eee4fd 100%);
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-height: 100vh;
-    padding: 24px;
+    padding: 36px 20px 48px;
   }
-  h1 { font-size: 2rem; margin-bottom: 4px; letter-spacing: 2px; }
-  p.sub { color: #8b949e; margin-bottom: 24px; font-size: 0.9rem; }
+
+  /* Floating petals background */
+  body::before {
+    content: '🌸 🌼 🌷 🌺 🌸 🌼 🌷 🌺 🌸 🌼';
+    position: fixed;
+    top: -10px; left: 0; right: 0;
+    font-size: 1.4rem;
+    letter-spacing: 48px;
+    opacity: 0.18;
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    color: #c96fa0;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+    text-shadow: 0 2px 12px rgba(201,111,160,0.15);
+  }
+  p.sub {
+    font-size: 0.95rem;
+    color: #b08aaa;
+    margin-bottom: 32px;
+    letter-spacing: 1px;
+    font-weight: 300;
+  }
 
   .wheel-wrap {
     position: relative;
     width: 380px;
     height: 380px;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
+    filter: drop-shadow(0 8px 32px rgba(201,111,160,0.25));
   }
-  canvas { border-radius: 50%; box-shadow: 0 0 40px rgba(0,163,224,0.4); }
+  canvas { border-radius: 50%; }
 
-  /* Pointer arrow */
+  /* Pointer */
   .pointer {
     position: absolute;
     top: 50%;
-    right: -22px;
+    right: -20px;
     transform: translateY(-50%);
-    width: 0;
-    height: 0;
-    border-top: 18px solid transparent;
-    border-bottom: 18px solid transparent;
-    border-right: 36px solid #f25022;
-    filter: drop-shadow(0 0 6px #f25022);
+    width: 0; height: 0;
+    border-top: 16px solid transparent;
+    border-bottom: 16px solid transparent;
+    border-right: 32px solid #e8739c;
+    filter: drop-shadow(0 2px 6px rgba(232,115,156,0.5));
+  }
+
+  /* Center hub */
+  .hub {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 36px; height: 36px;
+    background: #fff;
+    border-radius: 50%;
+    border: 3px solid #f0b8d0;
+    box-shadow: 0 2px 8px rgba(201,111,160,0.2);
+    pointer-events: none;
   }
 
   button#spin {
-    background: linear-gradient(135deg, #0071bc, #00a3e0);
+    font-family: 'Playfair Display', serif;
+    background: linear-gradient(135deg, #f5a3c4, #e8739c);
     color: #fff;
     border: none;
-    padding: 14px 48px;
+    padding: 14px 52px;
     font-size: 1.2rem;
-    border-radius: 40px;
+    border-radius: 50px;
     cursor: pointer;
-    letter-spacing: 1px;
-    box-shadow: 0 4px 20px rgba(0,163,224,0.5);
-    transition: transform 0.1s, box-shadow 0.1s;
+    letter-spacing: 2px;
+    box-shadow: 0 4px 20px rgba(232,115,156,0.35);
+    transition: transform 0.15s, box-shadow 0.15s;
   }
-  button#spin:hover { transform: scale(1.05); }
+  button#spin:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 8px 28px rgba(232,115,156,0.45); }
   button#spin:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
   .result {
-    margin-top: 24px;
-    font-size: 1.8rem;
-    font-weight: bold;
-    min-height: 2.4rem;
-    color: #f9c74f;
-    text-shadow: 0 0 12px #f9c74f88;
+    margin-top: 28px;
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: #c96fa0;
+    min-height: 2.6rem;
+    text-align: center;
     letter-spacing: 1px;
+    text-shadow: 0 2px 12px rgba(201,111,160,0.2);
   }
 
-  /* Item editor */
+  /* Editor */
   .editor {
-    margin-top: 32px;
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 12px;
-    padding: 20px;
+    margin-top: 36px;
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(12px);
+    border: 1.5px solid #f5d0e3;
+    border-radius: 20px;
+    padding: 24px;
     width: 380px;
+    box-shadow: 0 4px 24px rgba(201,111,160,0.08);
   }
-  .editor h2 { font-size: 1rem; color: #8b949e; margin-bottom: 12px; }
-  .item-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
-  .item-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
+  .editor h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    color: #c96fa0;
+    margin-bottom: 14px;
+    letter-spacing: 1px;
   }
+  .item-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .item-row { display: flex; gap: 8px; align-items: center; }
   .item-row input {
     flex: 1;
-    background: #0d1117;
-    border: 1px solid #30363d;
-    color: #fff;
-    padding: 6px 10px;
-    border-radius: 6px;
+    background: rgba(255,255,255,0.9);
+    border: 1.5px solid #f0c0d8;
+    color: #7a4a6a;
+    padding: 7px 12px;
+    border-radius: 10px;
     font-size: 0.95rem;
+    font-family: 'Lato', sans-serif;
+    outline: none;
+    transition: border 0.2s;
   }
+  .item-row input:focus { border-color: #e8739c; }
   .item-row button {
-    background: #21262d;
-    border: 1px solid #30363d;
-    color: #f85149;
-    padding: 5px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.85rem;
-  }
-  .editor-actions { display: flex; gap: 8px; }
-  .editor-actions button {
-    flex: 1;
-    background: #21262d;
-    border: 1px solid #30363d;
-    color: #8b949e;
-    padding: 8px;
+    background: #fde8f0;
+    border: 1.5px solid #f0c0d8;
+    color: #e8739c;
+    padding: 6px 11px;
     border-radius: 8px;
     cursor: pointer;
     font-size: 0.9rem;
     transition: background 0.15s;
   }
-  .editor-actions button:hover { background: #30363d; color: #fff; }
+  .item-row button:hover { background: #f5d0e3; }
+  .editor-actions { display: flex; gap: 8px; }
+  .editor-actions button {
+    flex: 1;
+    background: rgba(255,255,255,0.8);
+    border: 1.5px solid #f0c0d8;
+    color: #c96fa0;
+    padding: 9px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: 'Lato', sans-serif;
+    letter-spacing: 0.5px;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .editor-actions button:hover { background: #fde8f0; transform: translateY(-1px); }
 </style>
 </head>
 <body>
 
-<h1>🎰 Roulette</h1>
-<p class="sub">Spin the wheel and let fate decide!</p>
+<h1>🌸 Spin the Wheel</h1>
+<p class="sub">Let fate bloom — give it a spin!</p>
 
 <div class="wheel-wrap">
   <canvas id="wheel" width="380" height="380"></canvas>
   <div class="pointer"></div>
+  <div class="hub"></div>
 </div>
 
-<button id="spin">▶ Spin!</button>
+<button id="spin">✦ Spin ✦</button>
 <div class="result" id="result"></div>
 
 <div class="editor">
-  <h2>✏️ Edit Items</h2>
+  <h2>✦ Edit Names</h2>
   <div class="item-list" id="itemList"></div>
   <div class="editor-actions">
     <button id="addItem">＋ Add</button>
@@ -138,12 +194,13 @@
 </div>
 
 <script>
+// Spring pastel palette — softer & more varied
 const COLORS = [
-  '#0071bc','#f25022','#7fba00','#ffb900','#00a3e0',
-  '#e74c3c','#2ecc71','#9b59b6','#1abc9c','#e67e22'
+  '#ffc8dd','#ffafcc','#bde0fe','#a2d2ff','#cdb4db',
+  '#ffd6a5','#caffbf','#9bf6ff','#fdffb6','#ffc6ff'
 ];
 
-let items = ['Irving','私','Eric','Tony','Yukino','Soichi'];
+let items = ['Irving','Me','Eric','Tony','Yukino','Soichi'];
 let spinning = false;
 let currentAngle = 0;
 
@@ -161,15 +218,17 @@ function drawWheel(angle) {
     const start = angle + i * slice;
     const end   = start + slice;
 
-    // Slice
+    // Slice fill
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.arc(cx, cy, r, start, end);
     ctx.closePath();
     ctx.fillStyle = COLORS[i % COLORS.length];
     ctx.fill();
-    ctx.strokeStyle = '#0d1117';
-    ctx.lineWidth = 2;
+
+    // Soft divider
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 3;
     ctx.stroke();
 
     // Label
@@ -177,21 +236,27 @@ function drawWheel(angle) {
     ctx.translate(cx, cy);
     ctx.rotate(start + slice / 2);
     ctx.textAlign = 'right';
-    ctx.fillStyle = '#fff';
-    ctx.font = `bold ${Math.min(18, 200 / items.length + 4)}px Segoe UI`;
-    ctx.shadowColor = '#0005';
-    ctx.shadowBlur = 4;
-    ctx.fillText(item, r - 14, 6);
+    const fontSize = Math.min(17, 180 / items.length + 5);
+    ctx.font = `700 ${fontSize}px 'Lato', sans-serif`;
+    ctx.fillStyle = '#9a6080';
+    ctx.shadowColor = 'rgba(255,255,255,0.9)';
+    ctx.shadowBlur = 6;
+    ctx.fillText(item, r - 16, 6);
     ctx.restore();
   });
 
-  // Center circle
+  // Outer ring
   ctx.beginPath();
-  ctx.arc(cx, cy, 22, 0, 2 * Math.PI);
-  ctx.fillStyle = '#0d1117';
-  ctx.fill();
-  ctx.strokeStyle = '#30363d';
-  ctx.lineWidth = 3;
+  ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+  ctx.strokeStyle = 'rgba(255,200,221,0.8)';
+  ctx.lineWidth = 6;
+  ctx.stroke();
+
+  // Inner glow ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, r - 8, 0, 2 * Math.PI);
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = 4;
   ctx.stroke();
 }
 
@@ -228,23 +293,19 @@ function spin() {
       spinning = false;
       spinBtn.disabled = false;
       const winner = getWinner(currentAngle);
-      result.textContent = `🎉 ${winner}!`;
+      result.textContent = `🌸 ${winner}!`;
     }
   }
   requestAnimationFrame(frame);
 }
 
-// ── Editor ──────────────────────────────────────
 function renderEditor() {
   const list = document.getElementById('itemList');
   list.innerHTML = '';
   items.forEach((item, i) => {
     const row = document.createElement('div');
     row.className = 'item-row';
-    row.innerHTML = `
-      <input type="text" value="${item}" data-idx="${i}">
-      <button data-del="${i}">✕</button>
-    `;
+    row.innerHTML = `<input type="text" value="${item}" data-idx="${i}"><button data-del="${i}">✕</button>`;
     list.appendChild(row);
   });
   list.querySelectorAll('[data-del]').forEach(btn => {
@@ -257,7 +318,7 @@ function renderEditor() {
 }
 
 document.getElementById('addItem').addEventListener('click', () => {
-  items.push('New Item');
+  items.push('New Name');
   renderEditor();
 });
 
@@ -270,8 +331,6 @@ document.getElementById('applyItems').addEventListener('click', () => {
 });
 
 spinBtn.addEventListener('click', spin);
-
-// Init
 renderEditor();
 drawWheel(currentAngle);
 </script>
