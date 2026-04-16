@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎰 Roulette</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #0d1117;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  h1 { font-size: 2rem; margin-bottom: 4px; letter-spacing: 2px; }
+  p.sub { color: #8b949e; margin-bottom: 24px; font-size: 0.9rem; }
+
+  .wheel-wrap {
+    position: relative;
+    width: 380px;
+    height: 380px;
+    margin-bottom: 24px;
+  }
+  canvas { border-radius: 50%; box-shadow: 0 0 40px rgba(0,163,224,0.4); }
+
+  /* Pointer arrow */
+  .pointer {
+    position: absolute;
+    top: 50%;
+    right: -22px;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 18px solid transparent;
+    border-bottom: 18px solid transparent;
+    border-right: 36px solid #f25022;
+    filter: drop-shadow(0 0 6px #f25022);
+  }
+
+  button#spin {
+    background: linear-gradient(135deg, #0071bc, #00a3e0);
+    color: #fff;
+    border: none;
+    padding: 14px 48px;
+    font-size: 1.2rem;
+    border-radius: 40px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 20px rgba(0,163,224,0.5);
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  button#spin:hover { transform: scale(1.05); }
+  button#spin:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .result {
+    margin-top: 24px;
+    font-size: 1.8rem;
+    font-weight: bold;
+    min-height: 2.4rem;
+    color: #f9c74f;
+    text-shadow: 0 0 12px #f9c74f88;
+    letter-spacing: 1px;
+  }
+
+  /* Item editor */
+  .editor {
+    margin-top: 32px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 20px;
+    width: 380px;
+  }
+  .editor h2 { font-size: 1rem; color: #8b949e; margin-bottom: 12px; }
+  .item-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .item-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .item-row input {
+    flex: 1;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+  }
+  .item-row button {
+    background: #21262d;
+    border: 1px solid #30363d;
+    color: #f85149;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .editor-actions { display: flex; gap: 8px; }
+  .editor-actions button {
+    flex: 1;
+    background: #21262d;
+    border: 1px solid #30363d;
+    color: #8b949e;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.15s;
+  }
+  .editor-actions button:hover { background: #30363d; color: #fff; }
+</style>
+</head>
+<body>
+
+<h1>🎰 Roulette</h1>
+<p class="sub">Spin the wheel and let fate decide!</p>
+
+<div class="wheel-wrap">
+  <canvas id="wheel" width="380" height="380"></canvas>
+  <div class="pointer"></div>
+</div>
+
+<button id="spin">▶ Spin!</button>
+<div class="result" id="result"></div>
+
+<div class="editor">
+  <h2>✏️ Edit Items</h2>
+  <div class="item-list" id="itemList"></div>
+  <div class="editor-actions">
+    <button id="addItem">＋ Add</button>
+    <button id="applyItems">✔ Apply</button>
+  </div>
+</div>
+
+<script>
+const COLORS = [
+  '#0071bc','#f25022','#7fba00','#ffb900','#00a3e0',
+  '#e74c3c','#2ecc71','#9b59b6','#1abc9c','#e67e22'
+];
+
+let items = ['Irving','私','Eric','Tony','Yukino','Soichi'];
+let spinning = false;
+let currentAngle = 0;
+
+const canvas  = document.getElementById('wheel');
+const ctx     = canvas.getContext('2d');
+const spinBtn = document.getElementById('spin');
+const result  = document.getElementById('result');
+
+function drawWheel(angle) {
+  const cx = canvas.width / 2, cy = canvas.height / 2, r = cx - 4;
+  const slice = (2 * Math.PI) / items.length;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  items.forEach((item, i) => {
+    const start = angle + i * slice;
+    const end   = start + slice;
+
+    // Slice
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, start, end);
+    ctx.closePath();
+    ctx.fillStyle = COLORS[i % COLORS.length];
+    ctx.fill();
+    ctx.strokeStyle = '#0d1117';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Label
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(start + slice / 2);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#fff';
+    ctx.font = `bold ${Math.min(18, 200 / items.length + 4)}px Segoe UI`;
+    ctx.shadowColor = '#0005';
+    ctx.shadowBlur = 4;
+    ctx.fillText(item, r - 14, 6);
+    ctx.restore();
+  });
+
+  // Center circle
+  ctx.beginPath();
+  ctx.arc(cx, cy, 22, 0, 2 * Math.PI);
+  ctx.fillStyle = '#0d1117';
+  ctx.fill();
+  ctx.strokeStyle = '#30363d';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+}
+
+function getWinner(angle) {
+  const slice = (2 * Math.PI) / items.length;
+  // Pointer points LEFT (π), so winning slice is the one at angle π
+  const norm = ((Math.PI - angle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+  const idx  = Math.floor(norm / slice) % items.length;
+  return items[idx];
+}
+
+function spin() {
+  if (spinning || items.length < 2) return;
+  spinning = true;
+  result.textContent = '';
+  spinBtn.disabled = true;
+
+  const extraSpins  = (5 + Math.floor(Math.random() * 5)) * 2 * Math.PI;
+  const randomStop  = Math.random() * 2 * Math.PI;
+  const targetAngle = currentAngle + extraSpins + randomStop;
+  const duration    = 3500 + Math.random() * 1000;
+  const start       = performance.now();
+  const startAngle  = currentAngle;
+
+  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+  function frame(now) {
+    const t = Math.min((now - start) / duration, 1);
+    currentAngle = startAngle + (targetAngle - startAngle) * easeOut(t);
+    drawWheel(currentAngle);
+    if (t < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      spinning = false;
+      spinBtn.disabled = false;
+      const winner = getWinner(currentAngle);
+      result.textContent = `🎉 ${winner}!`;
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+// ── Editor ──────────────────────────────────────
+function renderEditor() {
+  const list = document.getElementById('itemList');
+  list.innerHTML = '';
+  items.forEach((item, i) => {
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    row.innerHTML = `
+      <input type="text" value="${item}" data-idx="${i}">
+      <button data-del="${i}">✕</button>
+    `;
+    list.appendChild(row);
+  });
+  list.querySelectorAll('[data-del]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      items.splice(Number(btn.dataset.del), 1);
+      renderEditor();
+      drawWheel(currentAngle);
+    });
+  });
+}
+
+document.getElementById('addItem').addEventListener('click', () => {
+  items.push('New Item');
+  renderEditor();
+});
+
+document.getElementById('applyItems').addEventListener('click', () => {
+  const inputs = document.querySelectorAll('#itemList input');
+  items = Array.from(inputs).map(i => i.value.trim()).filter(v => v);
+  renderEditor();
+  result.textContent = '';
+  drawWheel(currentAngle);
+});
+
+spinBtn.addEventListener('click', spin);
+
+// Init
+renderEditor();
+drawWheel(currentAngle);
+</script>
+</body>
+</html>
