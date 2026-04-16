@@ -197,8 +197,8 @@ function drawWheel(angle) {
 
 function getWinner(angle) {
   const slice = (2 * Math.PI) / items.length;
-  // Pointer points LEFT (π), so winning slice is the one at angle π
-  const norm = ((Math.PI - angle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+  // Pointer is on the RIGHT (angle 0 = 3 o'clock)
+  const norm = ((-angle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
   const idx  = Math.floor(norm / slice) % items.length;
   return items[idx];
 }
